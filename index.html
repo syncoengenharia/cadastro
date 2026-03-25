@@ -264,8 +264,6 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
           <option value="">Selecionar...</option>
           <option>Indicacao da Dominio Administradora</option>
           <option>Indicacao de outro sindico</option>
-          <option>Instagram @synco.engenharia</option>
-          <option>LinkedIn</option>
           <option>Outra indicacao</option>
         </select>
       </div>
@@ -307,7 +305,7 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
   <div class="success-wrap">
     <div class="success-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
     <div class="success-title">Formulario enviado!</div>
-    <div class="success-sub">Obrigado. O Eng. Marcelo Bizinoto recebera suas informacoes e entrara em contato em ate 24 horas com uma proposta personalizada para o seu condominio.</div>
+    <div class="success-sub">Obrigado. Nossa equipe recebera suas informacoes e entrara em contato em ate 24 horas com uma proposta personalizada para o seu condominio.</div>
     <div class="success-ref" id="ref-code"></div>
     <div class="success-contact">(34) 99687-7588 · synco.eng@gmail.com · @synco.engenharia</div>
   </div>
@@ -391,7 +389,7 @@ function updatePreview(){
   document.getElementById('s-total').textContent=sc.total>0?sc.total+' pts':'-';
   if(sc.faixa){
     document.getElementById('s-faixa').textContent=sc.faixa.n;
-    document.getElementById('s-price').textContent='R$ '+sc.faixa.anual.toLocaleString('pt-BR')+'/ano  -  R$ '+Math.round(sc.faixa.anual/12).toLocaleString('pt-BR')+'/mes em 12x';
+    document.getElementById('s-price').textContent='';
   } else {
     document.getElementById('s-faixa').textContent='-';
     document.getElementById('s-price').textContent='Preencha os dados anteriores';
