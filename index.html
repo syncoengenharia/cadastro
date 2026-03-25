@@ -457,8 +457,9 @@ function submitForm(){
   });
   var insp=document.querySelector('input[name="insp_ant"]:checked');
   var pad=document.querySelector('input[name="padrao"]:checked');
+  var refId='SYN-'+Date.now().toString(36).toUpperCase().slice(-6);
   var entry={
-    id:'SYN-'+Date.now().toString(36).toUpperCase().slice(-6),
+    id:refId,
     ts:new Date().toLocaleString('pt-BR'),
     nome:document.getElementById('nome').value,
     sindico:document.getElementById('sindico_nome').value,
@@ -480,13 +481,60 @@ function submitForm(){
     valor_anual:sc.faixa?sc.faixa.anual:0,
     mensalidade:sc.faixa?Math.round(sc.faixa.anual/12):0
   };
-  try{
-    var all=JSON.parse(localStorage.getItem(SK)||'[]');
-    all.unshift(entry);
-    localStorage.setItem(SK,JSON.stringify(all));
-  }catch(e){}
-  document.getElementById('ref-code').textContent='Protocolo: '+entry.id;
-  showView('success');
+
+  var btn=document.querySelector('.btn-submit');
+  btn.disabled=true;
+  btn.textContent='Enviando...';
+
+  fetch('https://formspree.io/f/xaqlyqbv',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body:JSON.stringify({
+      _subject:'Novo formulario Synco - '+entry.nome,
+      Protocolo:entry.id,
+      Data:entry.ts,
+      Condominio:entry.nome,
+      Sindico:entry.sindico,
+      Cargo:entry.cargo,
+      Telefone:entry.telefone,
+      Email:entry.email,
+      Administradora:entry.administradora,
+      Pavimentos:entry.pavimentos,
+      Unidades:entry.unidades,
+      Area_m2:entry.area,
+      Padrao:entry.padrao,
+      Torres:entry.torres,
+      Areas_Comuns:areas.length?areas.join(', '):'nenhuma',
+      Inspecao_Anterior:entry.inspecao,
+      Desafio:entry.desafio,
+      Origem:entry.origem,
+      Pontuacao:entry.pontuacao+' pts',
+      Faixa:entry.faixa,
+      Valor_Anual:'R$ '+entry.valor_anual.toLocaleString('pt-BR'),
+      Mensalidade:'R$ '+entry.mensalidade.toLocaleString('pt-BR')+'/mes'
+    })
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    if(data.ok){
+      try{
+        var all=JSON.parse(localStorage.getItem(SK)||'[]');
+        all.unshift(entry);
+        localStorage.setItem(SK,JSON.stringify(all));
+      }catch(e){}
+      document.getElementById('ref-code').textContent='Protocolo: '+entry.id;
+      showView('success');
+    } else {
+      flash('Erro ao enviar. Tente novamente.');
+      btn.disabled=false;
+      btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Enviar formulario';
+    }
+  })
+  .catch(function(){
+    flash('Sem conexao. Verifique sua internet e tente novamente.');
+    btn.disabled=false;
+    btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Enviar formulario';
+  });
 }
 
 function showView(v){
