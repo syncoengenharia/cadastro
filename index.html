@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Synco Engenharia — Levantamento Técnico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0D1B2A;--navy2:#1B3A5C;--green:#2E7D32;--green-light:#E8F5E9;
+  --accent:#4CAF50;--text:#1A1A1A;--muted:#6B7280;--border:#E2E8F0;
+  --bg:#F8FAFC;--white:#FFFFFF;--input-bg:#FFFFFF;--error:#E53935;
+}
+html,body{min-height:100vh;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text)}
+#app{max-width:600px;margin:0 auto;min-height:100vh;background:white;box-shadow:0 0 40px rgba(0,0,0,.08)}
+.view{display:none}.view.active{display:block}
+
+.form-header{background:var(--navy);padding:28px 32px 24px;position:relative;overflow:hidden}
+.form-header::after{content:'';position:absolute;right:-40px;top:-40px;width:180px;height:180px;border:2px solid rgba(46,125,50,0.2);border-radius:50%;pointer-events:none}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.brand-icon{width:32px;height:32px;background:var(--green);border-radius:6px;display:flex;align-items:center;justify-content:center}
+.brand-icon svg{width:18px;height:18px;fill:white}
+.brand-name{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:white;letter-spacing:.5px}
+.brand-tag{font-size:11px;color:rgba(255,255,255,0.45);letter-spacing:1px;text-transform:uppercase;margin-left:2px}
+.form-title{font-family:'Syne',sans-serif;font-weight:700;font-size:22px;color:white;line-height:1.2;margin-bottom:6px}
+.form-subtitle{font-size:13px;color:rgba(255,255,255,0.6);line-height:1.5}
+
+.progress-wrap{padding:16px 32px 0;background:var(--navy)}
+.progress-steps{display:flex;gap:4px;margin-bottom:6px}
+.step-dot{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,0.15);transition:background .3s}
+.step-dot.done{background:var(--accent)}
+.step-dot.active{background:var(--accent);opacity:.7}
+.progress-label{font-size:11px;color:rgba(255,255,255,0.45);padding-bottom:12px;letter-spacing:.5px}
+
+.form-body{padding:24px 32px 40px}
+.section-title{font-family:'Syne',sans-serif;font-weight:600;font-size:12px;color:var(--navy2);letter-spacing:.8px;text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.section-title::before{content:'';width:16px;height:2px;background:var(--green);border-radius:1px;flex-shrink:0}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px}
+.req{color:var(--error);margin-left:2px}
+.field label small{font-weight:400;color:var(--muted);font-size:11px;margin-left:4px}
+input[type=text],input[type=email],input[type=number],select,textarea{
+  width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;
+  font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);
+  background:var(--input-bg);outline:none;transition:border .2s;-webkit-appearance:none;appearance:none;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--navy2)}
+input.err,select.err{border-color:var(--error)}
+select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+textarea{resize:vertical;min-height:80px;line-height:1.5}
+.hint{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px}
+.check-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:border .2s,background .2s;user-select:none}
+.check-item:hover{border-color:var(--navy2);background:var(--green-light)}
+.check-item input[type=checkbox]{width:16px;height:16px;accent-color:var(--green);flex-shrink:0;cursor:pointer}
+.check-item span{font-size:13px;line-height:1.3}
+
+.radio-pills{display:flex;gap:8px;flex-wrap:wrap}
+.pill-opt{display:flex;align-items:center;gap:6px;padding:8px 16px;border:1.5px solid var(--border);border-radius:20px;cursor:pointer;font-size:13px;transition:all .2s;user-select:none}
+.pill-opt input{display:none}
+.pill-opt.selected{background:var(--navy);color:white;border-color:var(--navy)}
+
+.nav{display:flex;gap:12px;margin-top:28px;padding-top:20px;border-top:1px solid var(--border)}
+.btn-back{padding:10px 20px;border:1.5px solid var(--border);border-radius:8px;background:white;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--muted);transition:all .2s}
+.btn-back:hover{border-color:var(--navy);color:var(--navy)}
+.btn-next{padding:10px 28px;border:none;border-radius:8px;background:var(--navy);color:white;font-size:14px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s;margin-left:auto}
+.btn-next:hover{background:var(--navy2)}
+.btn-submit{padding:12px 32px;border:none;border-radius:8px;background:var(--green);color:white;font-size:15px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s;margin-left:auto;display:flex;align-items:center;gap:8px}
+.btn-submit:hover{background:#1B5E20}
+
+.score-card{background:var(--navy);border-radius:12px;padding:20px 24px;margin-bottom:20px}
+.score-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.score-label{font-size:13px;color:rgba(255,255,255,0.55)}
+.score-val{font-size:13px;color:white;font-weight:500}
+.score-divider{height:1px;background:rgba(255,255,255,0.1);margin:12px 0}
+.score-total-row{display:flex;justify-content:space-between;align-items:center}
+.score-total-label{font-family:'Syne',sans-serif;font-size:14px;color:rgba(255,255,255,0.8);font-weight:600}
+.score-total-val{font-family:'Syne',sans-serif;font-size:24px;color:var(--accent);font-weight:700}
+.faixa-badge{text-align:center;margin-top:14px;padding:14px;background:rgba(255,255,255,0.06);border-radius:8px}
+.faixa-name{font-family:'Syne',sans-serif;font-size:16px;color:white;font-weight:700}
+.faixa-price{font-size:13px;color:rgba(255,255,255,0.55);margin-top:4px}
+
+.success-wrap{text-align:center;padding:48px 32px}
+.success-icon{width:72px;height:72px;background:var(--green-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.success-icon svg{width:36px;height:36px;stroke:var(--green);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.success-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:700;color:var(--navy);margin-bottom:10px}
+.success-sub{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:28px;max-width:360px;margin-left:auto;margin-right:auto}
+.success-ref{display:inline-block;padding:10px 24px;background:var(--navy);color:white;border-radius:8px;font-size:13px;font-weight:500;letter-spacing:.5px}
+.success-contact{margin-top:14px;font-size:12px;color:#aaa}
+
+.admin-header{background:var(--navy);padding:20px 24px;display:flex;align-items:center;justify-content:space-between}
+.admin-title{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:white}
+.admin-sub{font-size:12px;color:rgba(255,255,255,.45);margin-top:2px}
+.btn-adm-form{padding:8px 16px;border:1px solid rgba(255,255,255,.2);border-radius:6px;background:transparent;color:white;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s}
+.btn-adm-form:hover{background:rgba(255,255,255,.1)}
+.admin-body{padding:20px 24px 40px}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.stat-card{background:white;border:1.5px solid var(--border);border-radius:10px;padding:14px 16px}
+.stat-n{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--navy)}
+.stat-l{font-size:12px;color:var(--muted);margin-top:2px}
+.entries-title{font-family:'Syne',sans-serif;font-size:12px;color:var(--navy2);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px}
+.entry-card{background:white;border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px}
+.entry-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.entry-name{font-weight:500;font-size:14px;color:var(--navy)}
+.entry-sindico{font-size:12px;color:var(--muted);margin-top:2px}
+.entry-pts{background:var(--navy);color:white;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;white-space:nowrap}
+.entry-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.entry-kv{font-size:12px;color:var(--muted);line-height:1.6}
+.entry-kv strong{color:var(--text);font-weight:500}
+.entry-full{grid-column:1/-1}
+.entry-price{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.entry-faixa{font-size:12px;color:var(--muted)}
+.entry-valor{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--green)}
+.empty-state{text-align:center;padding:48px 20px;color:var(--muted);font-size:14px;line-height:1.7}
+.btn-clear{display:block;margin:16px auto 0;padding:8px 20px;border:1.5px solid var(--border);border-radius:6px;background:white;color:var(--error);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif}
+
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px}
+.modal-box{background:white;border-radius:14px;padding:32px 28px;width:100%;max-width:320px;text-align:center}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:8px;color:var(--navy)}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.5}
+.modal-box input{margin-bottom:10px;text-align:center;letter-spacing:2px}
+.modal-err{font-size:12px;color:var(--error);margin-bottom:10px;display:none}
+.modal-btn{width:100%;padding:11px;border:none;border-radius:8px;background:var(--navy);color:white;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500}
+.modal-cancel{margin-top:10px;background:none;border:none;font-size:12px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;padding:6px}
+
+.flash{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#1A1A1A;color:white;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999;font-family:'DM Sans',sans-serif;display:none;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+
+@media(max-width:480px){
+  .form-header,.progress-wrap,.form-body,.admin-body{padding-left:20px;padding-right:20px}
+  .grid2{grid-template-columns:1fr}
+  .check-grid{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:1fr 1fr;gap:8px}
+  .stats-row .stat-card:last-child{grid-column:1/-1}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<div id="view-form" class="view active">
+  <div class="form-header">
+    <div class="brand">
+      <div class="brand-icon"><svg viewBox="0 0 20 20"><path d="M10 2L3 7v11h5v-6h4v6h5V7z"/></svg></div>
+      <div>
+        <div class="brand-name">SYNCO ENGENHARIA</div>
+        <div class="brand-tag">SYN.CONDO</div>
+      </div>
+    </div>
+    <div class="form-title">Levantamento Técnico do Condomínio</div>
+    <div class="form-subtitle">Preencha os dados abaixo para receber sua proposta de gestão técnica personalizada.</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-steps">
+      <div class="step-dot active" id="dot-0"></div>
+      <div class="step-dot" id="dot-1"></div>
+      <div class="step-dot" id="dot-2"></div>
+      <div class="step-dot" id="dot-3"></div>
+    </div>
+    <div class="progress-label" id="prog-label">Etapa 1 de 4 — Identificação</div>
+  </div>
+  <div class="form-body">
+
+    <div id="step-0">
+      <div class="section-title">Identificação</div>
+      <div class="field"><label>Nome do Condomínio <span class="req">*</span></label><input type="text" id="nome" placeholder="Ex: Residencial Jardim das Acácias"></div>
+      <div class="grid2">
+        <div class="field"><label>Seu Nome <span class="req">*</span></label><input type="text" id="sindico_nome" placeholder="Nome completo"></div>
+        <div class="field"><label>Cargo <span class="req">*</span></label>
+          <select id="cargo">
+            <option value="">Selecionar...</option>
+            <option>Sindico(a) Proprietario(a)</option>
+            <option>Sindico(a) Profissional</option>
+            <option>Subsindico(a)</option>
+            <option>Membro do Conselho</option>
+            <option>Gerente / Responsavel</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Telefone / WhatsApp <span class="req">*</span></label><input type="text" id="telefone" placeholder="(34) 9 9999-9999"></div>
+        <div class="field"><label>E-mail <span class="req">*</span></label><input type="email" id="email" placeholder="nome@email.com.br"></div>
+      </div>
+      <div class="field"><label>Administradora <small>(se houver)</small></label><input type="text" id="administradora" placeholder="Nome da administradora"></div>
+      <div class="nav"><button class="btn-next" onclick="nextStep(0)">Proximo</button></div>
+    </div>
+
+    <div id="step-1" style="display:none">
+      <div class="section-title">Porte do Condominio</div>
+      <div class="grid2">
+        <div class="field"><label>Numero de Pavimentos <span class="req">*</span></label><input type="number" id="pavimentos" min="1" max="60" placeholder="Ex: 12"></div>
+        <div class="field"><label>Numero de Unidades <span class="req">*</span></label><input type="number" id="unidades" min="1" max="2000" placeholder="Ex: 64"></div>
+      </div>
+      <div class="field"><label>Area Construida Estimada (m2) <span class="req">*</span><small>areas comuns + circulacao</small></label><input type="number" id="area" min="100" placeholder="Ex: 3500"></div>
+      <div class="field">
+        <label>Padrao Construtivo <span class="req">*</span></label>
+        <div class="radio-pills" id="padrao-group">
+          <label class="pill-opt" data-val="Popular" onclick="selPill(this,'padrao')"><input type="radio" name="padrao" value="Popular"> Popular</label>
+          <label class="pill-opt" data-val="Medio" onclick="selPill(this,'padrao')"><input type="radio" name="padrao" value="Medio"> Medio</label>
+          <label class="pill-opt" data-val="Alto" onclick="selPill(this,'padrao')"><input type="radio" name="padrao" value="Alto"> Alto</label>
+        </div>
+        <div class="hint">Popular = acabamento simples. Medio = padrao habitual. Alto = acabamentos diferenciados, automacao, marmore.</div>
+      </div>
+      <div class="nav">
+        <button class="btn-back" onclick="prevStep(1)">Voltar</button>
+        <button class="btn-next" onclick="nextStep(1)">Proximo</button>
+      </div>
+    </div>
+
+    <div id="step-2" style="display:none">
+      <div class="section-title">Areas e Equipamentos</div>
+      <div class="field">
+        <label>Quais areas e equipamentos o condominio possui? <small>(marque todos)</small></label>
+        <div class="check-grid">
+          <label class="check-item"><input type="checkbox" id="piscina"><span>Piscina</span></label>
+          <label class="check-item"><input type="checkbox" id="salao"><span>Salao de Festas</span></label>
+          <label class="check-item"><input type="checkbox" id="gourmet"><span>Espaco Gourmet</span></label>
+          <label class="check-item"><input type="checkbox" id="academia"><span>Academia / Fitness</span></label>
+          <label class="check-item"><input type="checkbox" id="playground"><span>Playground</span></label>
+          <label class="check-item"><input type="checkbox" id="quadra"><span>Quadra Esportiva</span></label>
+          <label class="check-item"><input type="checkbox" id="sauna"><span>Sauna / Spa</span></label>
+          <label class="check-item"><input type="checkbox" id="coworking"><span>Coworking / Brinquedoteca</span></label>
+          <label class="check-item"><input type="checkbox" id="gerador"><span>Gerador</span></label>
+          <label class="check-item"><input type="checkbox" id="spda"><span>SPDA (Para-raios)</span></label>
+          <label class="check-item"><input type="checkbox" id="elevadores"><span>Elevador(es)</span></label>
+          <label class="check-item"><input type="checkbox" id="subestacao"><span>Subestacao Eletrica</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Numero de Torres <span class="req">*</span></label>
+        <select id="torres">
+          <option value="1">1 torre</option>
+          <option value="2">2 torres</option>
+          <option value="3">3 torres</option>
+          <option value="4">4 ou mais torres</option>
+        </select>
+      </div>
+      <div class="nav">
+        <button class="btn-back" onclick="prevStep(2)">Voltar</button>
+        <button class="btn-next" onclick="nextStep(2)">Proximo</button>
+      </div>
+    </div>
+
+    <div id="step-3" style="display:none">
+      <div class="section-title">Historico e Revisao</div>
+      <div class="field">
+        <label>Ja realizou inspecao predial anteriormente?</label>
+        <div class="radio-pills" id="insp-group">
+          <label class="pill-opt" data-val="Sim" onclick="selPill(this,'insp_ant')"><input type="radio" name="insp_ant" value="Sim"> Sim</label>
+          <label class="pill-opt" data-val="Nao" onclick="selPill(this,'insp_ant')"><input type="radio" name="insp_ant" value="Nao"> Nao</label>
+          <label class="pill-opt" data-val="Nao sei" onclick="selPill(this,'insp_ant')"><input type="radio" name="insp_ant" value="Nao sei"> Nao sei</label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Qual o maior desafio tecnico do condominio hoje? <small>(opcional)</small></label>
+        <textarea id="desafio" placeholder="Ex: infiltracoes na garagem, problemas na fachada, sem plano de manutencao..."></textarea>
+      </div>
+      <div class="field">
+        <label>Como conheceu a Synco?</label>
+        <select id="origem">
+          <option value="">Selecionar...</option>
+          <option>Indicacao da Dominio Administradora</option>
+          <option>Indicacao de outro sindico</option>
+          <option>Instagram @synco.engenharia</option>
+          <option>LinkedIn</option>
+          <option>Outra indicacao</option>
+        </select>
+      </div>
+      <div class="score-card">
+        <div class="score-row"><span class="score-label">Pavimentos</span><span class="score-val" id="s-pav">-</span></div>
+        <div class="score-row"><span class="score-label">Unidades</span><span class="score-val" id="s-uni">-</span></div>
+        <div class="score-row"><span class="score-label">Area construida</span><span class="score-val" id="s-area">-</span></div>
+        <div class="score-row"><span class="score-label">Padrao construtivo</span><span class="score-val" id="s-pad">-</span></div>
+        <div class="score-row"><span class="score-label">Areas e equipamentos</span><span class="score-val" id="s-itens">-</span></div>
+        <div class="score-divider"></div>
+        <div class="score-total-row">
+          <span class="score-total-label">Pontuacao total</span>
+          <span class="score-total-val" id="s-total">-</span>
+        </div>
+        <div class="faixa-badge">
+          <div class="faixa-name" id="s-faixa">-</div>
+          <div class="faixa-price" id="s-price">Preencha os dados anteriores</div>
+        </div>
+      </div>
+      <div class="nav">
+        <button class="btn-back" onclick="prevStep(3)">Voltar</button>
+        <button class="btn-submit" onclick="submitForm()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Enviar formulario
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="view-success" class="view">
+  <div class="form-header">
+    <div class="brand">
+      <div class="brand-icon"><svg viewBox="0 0 20 20"><path d="M10 2L3 7v11h5v-6h4v6h5V7z"/></svg></div>
+      <div><div class="brand-name">SYNCO ENGENHARIA</div></div>
+    </div>
+  </div>
+  <div class="success-wrap">
+    <div class="success-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <div class="success-title">Formulario enviado!</div>
+    <div class="success-sub">Obrigado. O Eng. Marcelo Bizinoto recebera suas informacoes e entrara em contato em ate 24 horas com uma proposta personalizada para o seu condominio.</div>
+    <div class="success-ref" id="ref-code"></div>
+    <div class="success-contact">(34) 99687-7588 · synco.eng@gmail.com · @synco.engenharia</div>
+  </div>
+</div>
+
+<div id="view-admin" class="view">
+  <div class="admin-header">
+    <div>
+      <div class="admin-title">Painel Synco - Respostas</div>
+      <div class="admin-sub" id="adm-ts"></div>
+    </div>
+    <button class="btn-adm-form" onclick="showView('form')">Ver formulario</button>
+  </div>
+  <div class="admin-body">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-n" id="adm-total">0</div><div class="stat-l">Formularios</div></div>
+      <div class="stat-card"><div class="stat-n" id="adm-receita">R$ 0</div><div class="stat-l">Receita potencial/ano</div></div>
+      <div class="stat-card"><div class="stat-n" id="adm-mensal">R$ 0</div><div class="stat-l">Mensalidade media</div></div>
+    </div>
+    <div class="entries-title">Condominios cadastrados</div>
+    <div id="entries-list"></div>
+    <div id="empty-state" class="empty-state">Nenhum formulario recebido ainda.<br>Compartilhe o link com os sindicos.</div>
+    <button class="btn-clear" id="btn-clear" onclick="clearAll()" style="display:none">Limpar todos os registros</button>
+  </div>
+</div>
+
+</div>
+
+<div id="modal-admin" class="modal-bg" style="display:none">
+  <div class="modal-box">
+    <div class="modal-title">Acesso restrito</div>
+    <div class="modal-sub">Insira a senha para acessar o painel de respostas.</div>
+    <input type="password" id="pwd-input" placeholder="Senha" onkeydown="if(event.key==='Enter')checkPwd()">
+    <div class="modal-err" id="pwd-err">Senha incorreta. Tente novamente.</div>
+    <button class="modal-btn" onclick="checkPwd()">Entrar</button>
+    <button class="modal-cancel" onclick="document.getElementById('modal-admin').style.display='none'">Cancelar</button>
+  </div>
+</div>
+
+<div class="flash" id="flash"></div>
+
+<script>
+var SK='synco_entries', PWD='synco2025', step=0;
+var LABELS=['Identificacao','Porte','Areas e Equipamentos','Revisao'];
+
+function selPill(el,name){
+  el.closest('.radio-pills').querySelectorAll('.pill-opt').forEach(function(p){p.classList.remove('selected')});
+  el.classList.add('selected');
+  el.querySelector('input').checked=true;
+}
+
+function calcScore(){
+  var pav=parseInt(document.getElementById('pavimentos').value)||0;
+  var uni=parseInt(document.getElementById('unidades').value)||0;
+  var area=parseInt(document.getElementById('area').value)||0;
+  var padEl=document.querySelector('input[name="padrao"]:checked');
+  var pad=padEl?padEl.value:'';
+  var sPav=pav<=0?0:pav<=5?1:pav<=8?2:pav<=12?3:pav<=16?4:5;
+  var sUni=uni<=0?0:uni<=20?1:uni<=40?2:uni<=80?3:uni<=120?4:5;
+  var sArea=area<=0?0:area<=1000?1:area<=2500?2:area<=5000?3:area<=10000?4:5;
+  var sPad=pad==='Popular'?0:pad==='Medio'?1:pad==='Alto'?2:0;
+  var ids=['piscina','salao','gourmet','academia','playground','quadra','sauna','coworking','gerador','spda','elevadores','subestacao'];
+  var torres=parseInt(document.getElementById('torres').value)||1;
+  var sIt=0;
+  ids.forEach(function(id){var e=document.getElementById(id);if(e&&e.checked)sIt++;});
+  if(torres>=2)sIt+=(torres>=4?2:1);
+  sIt=Math.min(5,sIt);
+  var total=sPav+sUni+sArea+sPad+sIt;
+  var faixa=total<=0?null:total<=8?{n:'F1 - Pequeno Simples',anual:4200}:total<=11?{n:'F2 - Pequeno-Medio',anual:5400}:total<=14?{n:'F3 - Medio',anual:6600}:total<=17?{n:'F4 - Medio-Grande',anual:7500}:{n:'F5 - Grande / Premium',anual:8400};
+  return{sPav:sPav,sUni:sUni,sArea:sArea,sPad:sPad,sIt:sIt,total:total,faixa:faixa};
+}
+
+function updatePreview(){
+  var sc=calcScore();
+  function f(n){return n>0?n+' pt'+(n>1?'s':''):'-';}
+  document.getElementById('s-pav').textContent=f(sc.sPav);
+  document.getElementById('s-uni').textContent=f(sc.sUni);
+  document.getElementById('s-area').textContent=f(sc.sArea);
+  document.getElementById('s-pad').textContent=f(sc.sPad);
+  document.getElementById('s-itens').textContent=f(sc.sIt);
+  document.getElementById('s-total').textContent=sc.total>0?sc.total+' pts':'-';
+  if(sc.faixa){
+    document.getElementById('s-faixa').textContent=sc.faixa.n;
+    document.getElementById('s-price').textContent='R$ '+sc.faixa.anual.toLocaleString('pt-BR')+'/ano  -  R$ '+Math.round(sc.faixa.anual/12).toLocaleString('pt-BR')+'/mes em 12x';
+  } else {
+    document.getElementById('s-faixa').textContent='-';
+    document.getElementById('s-price').textContent='Preencha os dados anteriores';
+  }
+}
+
+function validate(n){
+  if(n===0){
+    var ids=['nome','sindico_nome','cargo','telefone','email'],ok=true;
+    ids.forEach(function(id){
+      var el=document.getElementById(id);
+      if(!el||!el.value.trim()){if(el)el.classList.add('err');ok=false;}
+      else el.classList.remove('err');
+    });
+    return ok;
+  }
+  if(n===1){
+    var ok=true;
+    ['pavimentos','unidades','area'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(!el.value){el.classList.add('err');ok=false;}else el.classList.remove('err');
+    });
+    if(!document.querySelector('input[name="padrao"]:checked'))ok=false;
+    return ok;
+  }
+  return true;
+}
+
+function nextStep(n){
+  if(!validate(n)){flash('Preencha todos os campos obrigatorios.');return;}
+  goTo(n+1);
+}
+function prevStep(n){goTo(n-1);}
+
+function goTo(n){
+  document.getElementById('step-'+step).style.display='none';
+  step=n;
+  document.getElementById('step-'+n).style.display='block';
+  updateDots();
+  if(n===3)updatePreview();
+  window.scrollTo(0,0);
+}
+
+function updateDots(){
+  for(var i=0;i<4;i++){
+    var d=document.getElementById('dot-'+i);
+    if(!d)continue;
+    d.className='step-dot'+(i<step?' done':i===step?' active':'');
+  }
+  document.getElementById('prog-label').textContent='Etapa '+(step+1)+' de 4 - '+LABELS[step];
+}
+
+function submitForm(){
+  var sc=calcScore();
+  var ids=['piscina','salao','gourmet','academia','playground','quadra','sauna','coworking','gerador','spda','elevadores','subestacao'];
+  var areas=[];
+  ids.forEach(function(id){
+    var e=document.getElementById(id);
+    if(e&&e.checked)areas.push(e.closest('.check-item').querySelector('span').textContent);
+  });
+  var insp=document.querySelector('input[name="insp_ant"]:checked');
+  var pad=document.querySelector('input[name="padrao"]:checked');
+  var entry={
+    id:'SYN-'+Date.now().toString(36).toUpperCase().slice(-6),
+    ts:new Date().toLocaleString('pt-BR'),
+    nome:document.getElementById('nome').value,
+    sindico:document.getElementById('sindico_nome').value,
+    cargo:document.getElementById('cargo').value,
+    telefone:document.getElementById('telefone').value,
+    email:document.getElementById('email').value,
+    administradora:document.getElementById('administradora').value||'-',
+    pavimentos:document.getElementById('pavimentos').value,
+    unidades:document.getElementById('unidades').value,
+    area:document.getElementById('area').value,
+    padrao:pad?pad.value:'-',
+    torres:document.getElementById('torres').value,
+    areas:areas,
+    inspecao:insp?insp.value:'-',
+    desafio:document.getElementById('desafio').value||'-',
+    origem:document.getElementById('origem').value||'-',
+    pontuacao:sc.total,
+    faixa:sc.faixa?sc.faixa.n:'-',
+    valor_anual:sc.faixa?sc.faixa.anual:0,
+    mensalidade:sc.faixa?Math.round(sc.faixa.anual/12):0
+  };
+  try{
+    var all=JSON.parse(localStorage.getItem(SK)||'[]');
+    all.unshift(entry);
+    localStorage.setItem(SK,JSON.stringify(all));
+  }catch(e){}
+  document.getElementById('ref-code').textContent='Protocolo: '+entry.id;
+  showView('success');
+}
+
+function showView(v){
+  document.querySelectorAll('.view').forEach(function(el){el.classList.remove('active')});
+  document.getElementById('view-'+v).classList.add('active');
+  if(v==='admin')renderAdmin();
+}
+
+function renderAdmin(){
+  var all=[];
+  try{all=JSON.parse(localStorage.getItem(SK)||'[]');}catch(e){}
+  document.getElementById('adm-ts').textContent='Atualizado: '+new Date().toLocaleString('pt-BR');
+  document.getElementById('adm-total').textContent=all.length;
+  var totalRec=all.reduce(function(a,e){return a+(e.valor_anual||0);},0);
+  var avgMes=all.length?Math.round(all.reduce(function(a,e){return a+(e.mensalidade||0);},0)/all.length):0;
+  document.getElementById('adm-receita').textContent='R$ '+totalRec.toLocaleString('pt-BR');
+  document.getElementById('adm-mensal').textContent='R$ '+avgMes.toLocaleString('pt-BR');
+  var list=document.getElementById('entries-list');
+  var empty=document.getElementById('empty-state');
+  var bc=document.getElementById('btn-clear');
+  if(!all.length){empty.style.display='block';list.innerHTML='';bc.style.display='none';return;}
+  empty.style.display='none';bc.style.display='block';
+  list.innerHTML=all.map(function(e){
+    return '<div class="entry-card">'+
+      '<div class="entry-top">'+
+        '<div><div class="entry-name">'+e.nome+'</div><div class="entry-sindico">'+e.sindico+' - '+e.cargo+'</div></div>'+
+        '<div class="entry-pts">'+e.pontuacao+' pts</div>'+
+      '</div>'+
+      '<div class="entry-grid">'+
+        '<div class="entry-kv"><strong>'+e.pavimentos+'</strong> pav. - <strong>'+e.unidades+'</strong> unid.</div>'+
+        '<div class="entry-kv">Area: <strong>'+parseInt(e.area).toLocaleString('pt-BR')+' m2</strong></div>'+
+        '<div class="entry-kv">Padrao: <strong>'+e.padrao+'</strong></div>'+
+        '<div class="entry-kv">Torres: <strong>'+e.torres+'</strong></div>'+
+        '<div class="entry-kv entry-full">Areas: '+(e.areas&&e.areas.length?e.areas.join(', '):'nenhuma')+'</div>'+
+        '<div class="entry-kv entry-full">Desafio: '+e.desafio+'</div>'+
+        '<div class="entry-kv entry-full">Origem: '+e.origem+' - Inspecao ant.: '+e.inspecao+'</div>'+
+        '<div class="entry-kv entry-full"><strong>Contato:</strong> '+e.telefone+' - '+e.email+'</div>'+
+        '<div class="entry-kv entry-full" style="color:#bbb;font-size:11px">'+e.ts+' - '+e.id+'</div>'+
+      '</div>'+
+      '<div class="entry-price">'+
+        '<div class="entry-faixa">'+e.faixa+'</div>'+
+        '<div class="entry-valor">R$ '+(e.valor_anual||0).toLocaleString('pt-BR')+'/ano - R$ '+(e.mensalidade||0).toLocaleString('pt-BR')+'/mes</div>'+
+      '</div></div>';
+  }).join('');
+}
+
+function clearAll(){
+  if(confirm('Apagar todos os registros?')){localStorage.removeItem(SK);renderAdmin();}
+}
+
+function flash(msg){
+  var f=document.getElementById('flash');
+  f.textContent=msg;f.style.display='block';
+  clearTimeout(window._ft);
+  window._ft=setTimeout(function(){f.style.display='none';},3000);
+}
+
+function checkPwd(){
+  if(document.getElementById('pwd-input').value===PWD){
+    document.getElementById('modal-admin').style.display='none';
+    showView('admin');
+  } else {
+    document.getElementById('pwd-err').style.display='block';
+    document.getElementById('pwd-input').value='';
+  }
+}
+
+document.addEventListener('keydown',function(e){
+  if(e.ctrlKey&&e.shiftKey&&e.key==='A'){
+    document.getElementById('modal-admin').style.display='flex';
+    setTimeout(function(){document.getElementById('pwd-input').focus();},50);
+  }
+});
+</script>
+</body>
+</html>
